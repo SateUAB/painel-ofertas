@@ -468,9 +468,9 @@
             const totalPolos = new Set(data.map(d => d.polo)).size;
             const totalTurmas = data.length;
 
-            animateValue("kpi-vagas", parseInt(document.getElementById("kpi-vagas").innerText), totalVagas, 500);
-            animateValue("kpi-polos", parseInt(document.getElementById("kpi-polos").innerText), totalPolos, 500);
-            animateValue("kpi-turmas", parseInt(document.getElementById("kpi-turmas").innerText), totalTurmas, 500);
+            animateValue("kpi-vagas", parseInt(document.getElementById("kpi-vagas").innerText), totalVagas, 400);
+            animateValue("kpi-polos", parseInt(document.getElementById("kpi-polos").innerText), totalPolos, 400);
+            animateValue("kpi-turmas", parseInt(document.getElementById("kpi-turmas").innerText), totalTurmas, 400);
 
             document.getElementById("kpi-vagas-subtitle").textContent = state.curso === "Todos" ? "No filtro atual" : `Para ${state.curso}`;
 
@@ -760,6 +760,34 @@
                 clearInterval(timer);
                 obj.innerHTML = end;
             }
+        }
+
+        // Função utilitária de animação (Otimizada com RequestAnimationFrame)
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            if (start === end) return;
+            
+            const range = end - start;
+            const startTime = performance.now();
+            
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Easing suave (easeOutQuad) para movimento natural
+                const ease = 1 - (1 - progress) * (1 - progress);
+                
+                const current = Math.floor(start + (range * ease));
+                obj.textContent = current;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                } else {
+                    obj.textContent = end;
+                }
+            }
+            
+            requestAnimationFrame(update);
         }
 
         // --- INICIALIZAÇÃO ---
