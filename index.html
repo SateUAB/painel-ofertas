@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Coordenador UAB/UECE</title>
+    
+    <!-- 1. Tailwind CSS (Estilos) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 2. Chart.js (Gráficos) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- 3. Lucide Icons (Ícones) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* Ajustes finos para garantir a altura dos gráficos */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        /* Transições suaves */
+        .transition-all {
+            transition-property: all;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 300ms;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900 font-sans">
+
+    <!-- HEADER -->
+    <header class="bg-emerald-900 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="bg-white/10 p-2 rounded-lg">
+                            <i data-lucide="graduation-cap" class="h-8 w-8 text-emerald-200"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-bold tracking-tight">Painel do Coordenador UAB/UECE</h1>
+                            <p class="text-emerald-200 text-sm">Editais Nº 07/2024 (Graduação) e 55/2025 (Especialização)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTROLS SECTION -->
+            <div class="mt-8 bg-white/5 p-6 rounded-xl border border-white/10 backdrop-blur-sm space-y-6">
+                <!-- 1. Level Selector -->
+                <div>
+                    <label class="block text-emerald-100 text-xs font-semibold uppercase tracking-wider mb-3">
+                        1. Selecione o Nível de Ensino
+                    </label>
+                    <div class="flex gap-2" id="level-buttons-container">
+                        <!-- Botões gerados via JS -->
+                    </div>
+                </div>
+
+                <!-- 2. Course Selector -->
+                <div>
+                    <label class="block text-emerald-100 text-xs font-semibold uppercase tracking-wider mb-3" id="course-label">
+                        2. Selecione o Curso
+                    </label>
+                    <div class="relative max-w-3xl">
+                        <div class="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" id="course-icon-container">
+                            <i data-lucide="school" class="h-5 w-5 text-emerald-700"></i>
+                        </div>
+                        <select id="course-select" class="w-full pl-12 pr-6 py-4 bg-white text-slate-900 rounded-lg text-lg font-semibold shadow-xl focus:ring-4 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none appearance-none cursor-pointer transition-all hover:bg-slate-50">
+                            <!-- Opções geradas via JS -->
+                        </select>
+                        <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                            <i data-lucide="chevron-right" class="h-5 w-5 text-slate-400 rotate-90"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="max-w-7xl mx-auto p-6 space-y-8 -mt-4 relative z-10">
+        
+        <!-- KPI CARDS -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Card 1 -->
+            <div class="bg-white rounded-xl shadow-md border-l-4 border-blue-500 p-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-sm text-slate-500 font-medium uppercase tracking-wider">Vagas Totais</p>
+                        <h3 id="kpi-vagas" class="text-4xl font-bold text-slate-800 mt-1">0</h3>
+                    </div>
+                    <div class="p-3 bg-blue-50 text-blue-600 rounded-lg">
+                        <i data-lucide="users" class="h-6 w-6"></i>
+                    </div>
+                </div>
+                <p id="kpi-vagas-subtitle" class="text-xs text-slate-400 mt-2">No filtro atual</p>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="bg-white rounded-xl shadow-md border-l-4 border-emerald-500 p-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-sm text-slate-500 font-medium uppercase tracking-wider">Polos Ofertantes</p>
+                        <h3 id="kpi-polos" class="text-4xl font-bold text-slate-800 mt-1">0</h3>
+                    </div>
+                    <div class="p-3 bg-emerald-50 text-emerald-600 rounded-lg">
+                        <i data-lucide="map-pin" class="h-6 w-6"></i>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-400 mt-2">Municípios atendidos</p>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="bg-white rounded-xl shadow-md border-l-4 border-amber-500 p-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-sm text-slate-500 font-medium uppercase tracking-wider">Turmas / Entradas</p>
+                        <h3 id="kpi-turmas" class="text-4xl font-bold text-slate-800 mt-1">0</h3>
+                    </div>
+                    <div class="p-3 bg-amber-50 text-amber-600 rounded-lg">
+                        <i data-lucide="book-open" class="h-6 w-6"></i>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-400 mt-2">Grupos de entrada distintos</p>
+            </div>
+        </div>
+
+        <!-- DYNAMIC CONTENT AREA -->
+        <div id="dynamic-content">
+            <!-- O conteúdo aqui (Gráficos ou Cronograma) será injetado pelo JS -->
+        </div>
+
+    </main>
+
+    <!-- SCRIPTS -->
+    <script>
+        // --- DADOS ---
+        const gradData = [
+            { polo: "Amontada", curso: "Computação - Licenciatura", oferta: "2025.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Amontada", curso: "Física - Licenciatura", oferta: "2025.1", vagas: 30, nivel: "Graduação" },
+            { polo: "Amontada", curso: "Química - Licenciatura", oferta: "2025.1", vagas: 30, nivel: "Graduação" },
+            { polo: "Aquiraz", curso: "Administração Pública - Bacharelado", oferta: "2025.1", vagas: 30, nivel: "Graduação" },
+            { polo: "Aquiraz", curso: "Ciências Contábeis - Bacharelado", oferta: "2025.1", vagas: 30, nivel: "Graduação" },
+            { polo: "Aquiraz", curso: "Computação - Licenciatura", oferta: "2025.2", vagas: 40, nivel: "Graduação" },
+            { polo: "Aquiraz", curso: "Geografia - Licenciatura", oferta: "2025.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Aracoiaba", curso: "Ciências Biológicas - Licenciatura", oferta: "2025.1", vagas: 36, nivel: "Graduação" },
+            { polo: "Aracoiaba", curso: "Letras/Português - Licenciatura", oferta: "2025.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Baturité", curso: "História - Licenciatura", oferta: "2025.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Baturité", curso: "Letras/Português - Licenciatura", oferta: "2025.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Baturité", curso: "Matemática - Licenciatura", oferta: "2025.1", vagas: 36, nivel: "Graduação" },
+            { polo: "Baturité", curso: "Pedagogia - Licenciatura Plena", oferta: "2025.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Beberibe", curso: "Administração Pública - Bacharelado", oferta: "2025.1", vagas: 30, nivel: "Graduação" },
+            { polo: "Beberibe", curso: "Ciências Biológicas - Licenciatura", oferta: "2025.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Beberibe", curso: "Computação - Licenciatura", oferta: "2025.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Beberibe", curso: "Educação Física - Licenciatura", oferta: "2025.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Beberibe", curso: "História - Licenciatura", oferta: "2025.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Beberibe", curso: "Pedagogia - Licenciatura Plena", oferta: "2025.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Boa Viagem", curso: "Geografia - Licenciatura", oferta: "2025.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Boa Viagem", curso: "História - Licenciatura", oferta: "2025.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Boa Viagem", curso: "Letras/Português - Licenciatura", oferta: "2025.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Boa Viagem", curso: "Pedagogia - Licenciatura Plena", oferta: "2025.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Brejo Santo", curso: "Artes Visuais - Licenciatura", oferta: "2025.1", vagas: 36, nivel: "Graduação" },
+            { polo: "Brejo Santo", curso: "Física - Licenciatura", oferta: "2025.1", vagas: 30, nivel: "Graduação" },
+            { polo: "Brejo Santo", curso: "Pedagogia - Licenciatura Plena", oferta: "2025.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Camocim", curso: "Ciências Biológicas - Licenciatura", oferta: "2025.2", vagas: 36, nivel: "Graduação" },
+            { polo: "Camocim", curso: "História - Licenciatura", oferta: "2025.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Canindé", curso: "Ciências Biológicas - Licenciatura", oferta: "2025.1", vagas: 36, nivel: "Graduação" },
+            { polo: "Canindé", curso: "Física - Licenciatura", oferta: "2025.1", vagas: 30, nivel: "Graduação" },
+            { polo: "Canindé", curso: "Química - Licenciatura", oferta: "2025.1", vagas: 30, nivel: "Graduação" },
+            { polo: "Cascavel", curso: "Geografia - Licenciatura", oferta: "2025.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Cascavel", curso: "História - Licenciatura", oferta: "2025.2", vagas: 40, nivel: "Graduação" },
+            { polo: "Cascavel", curso: "Letras/Português - Licenciatura", oferta: "2025.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Cascavel", curso: "Matemática - Licenciatura", oferta: "2025.1", vagas: 36, nivel: "Graduação" },
+            { polo: "Cascavel", curso: "Pedagogia - Licenciatura Plena", oferta: "2025.2", vagas: 40, nivel: "Graduação" },
+            { polo: "Caucaia - Novo Pabussú", curso: "Computação - Licenciatura", oferta: "2025.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Caucaia - Novo Pabussú", curso: "Educação Física - Licenciatura", oferta: "2025.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Crateús", curso: "Administração Pública - Bacharelado", oferta: "2025.1", vagas: 30, nivel: "Graduação" },
+            { polo: "Crateús", curso: "Artes Visuais - Licenciatura", oferta: "2025.1", vagas: 30, nivel: "Graduação" },
+            { polo: "Crateús", curso: "Computação - Licenciatura", oferta: "2025.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Horizonte", curso: "Geografia - Licenciatura", oferta: "2025.2", vagas: 40, nivel: "Graduação" },
+            { polo: "Horizonte", curso: "História - Licenciatura", oferta: "2025.2", vagas: 40, nivel: "Graduação" },
+            { polo: "Horizonte", curso: "Matemática - Licenciatura", oferta: "2025.1", vagas: 36, nivel: "Graduação" },
+            { polo: "Icó", curso: "Geografia - Licenciatura", oferta: "2025.2", vagas: 40, nivel: "Graduação" },
+            { polo: "Icó", curso: "Pedagogia - Licenciatura Plena", oferta: "2025.2", vagas: 40, nivel: "Graduação" },
+            { polo: "Iguatu", curso: "Artes Visuais - Licenciatura", oferta: "2025.1", vagas: 30, nivel: "Graduação" },
+            { polo: "Iguatu", curso: "Geografia - Licenciatura", oferta: "2025.2", vagas: 40, nivel: "Graduação" },
+            { polo: "Iguatu", curso: "História - Licenciatura", oferta: "2025.2", vagas: 40, nivel: "Graduação" },
+            { polo: "Itarema", curso: "Matemática - Licenciatura", oferta: "2025.1", vagas: 36, nivel: "Graduação" },
+            { polo: "Jaguaribe", curso: "Ciências Biológicas - Licenciatura", oferta: "2025.1", vagas: 36, nivel: "Graduação" },
+            { polo: "Jaguaribe", curso: "Computação - Licenciatura", oferta: "2025.2", vagas: 40, nivel: "Graduação" },
+            { polo: "Jaguaribe", curso: "Letras/Português - Licenciatura", oferta: "2025.2", vagas: 40, nivel: "Graduação" },
+            { polo: "Jaguaribe", curso: "Matemática - Licenciatura", oferta: "2025.1", vagas: 36, nivel: "Graduação" },
+            { polo: "Jaguaribe", curso: "Pedagogia - Licenciatura Plena", oferta: "2025.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Lavras da Mangabeira", curso: "Ciências Contábeis - Bacharelado", oferta: "2025.1", vagas: 30, nivel: "Graduação" },
+            { polo: "Limoeiro do Norte", curso: "Computação - Licenciatura", oferta: "2025.2", vagas: 40, nivel: "Graduação" },
+            { polo: "Limoeiro do Norte", curso: "Educação Física - Licenciatura", oferta: "2025.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Madalena", curso: "Geografia - Licenciatura", oferta: "2025.2", vagas: 40, nivel: "Graduação" },
+            { polo: "Madalena", curso: "Matemática - Licenciatura", oferta: "2025.2", vagas: 36, nivel: "Graduação" },
+            { polo: "Maracanaú", curso: "Física - Licenciatura", oferta: "2025.1", vagas: 30, nivel: "Graduação" },
+            { polo: "Maracanaú", curso: "Química - Licenciatura", oferta: "2025.1", vagas: 30, nivel: "Graduação" },
+            { polo: "Maranguape", curso: "Ciências Biológicas - Licenciatura", oferta: "2025.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Maranguape", curso: "Educação Física - Licenciatura", oferta: "2025.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Maranguape", curso: "História - Licenciatura", oferta: "2025.2", vagas: 40, nivel: "Graduação" },
+            { polo: "Mauriti", curso: "História - Licenciatura", oferta: "2025.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Mauriti", curso: "Matemática - Licenciatura", oferta: "2025.2", vagas: 36, nivel: "Graduação" },
+            { polo: "Mauriti", curso: "Pedagogia - Licenciatura Plena", oferta: "2025.2", vagas: 40, nivel: "Graduação" },
+            { polo: "Mombaça", curso: "Administração Pública - Bacharelado", oferta: "2025.1", vagas: 30, nivel: "Graduação" },
+            { polo: "Mombaça", curso: "Geografia - Licenciatura", oferta: "2026.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Morada Nova", curso: "Ciências Contábeis - Bacharelado", oferta: "2025.1", vagas: 30, nivel: "Graduação" },
+            { polo: "Morada Nova", curso: "História - Licenciatura", oferta: "2026.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Morada Nova", curso: "Matemática - Licenciatura", oferta: "2025.2", vagas: 36, nivel: "Graduação" },
+            { polo: "Morada Nova", curso: "Pedagogia - Licenciatura Plena", oferta: "2025.2", vagas: 40, nivel: "Graduação" },
+            { polo: "Nova Russas", curso: "Geografia - Licenciatura", oferta: "2025.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Orós", curso: "Educação Física - Licenciatura", oferta: "2025.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Orós", curso: "História - Licenciatura", oferta: "2025.2", vagas: 40, nivel: "Graduação" },
+            { polo: "Pacoti", curso: "Matemática - Licenciatura", oferta: "2025.2", vagas: 36, nivel: "Graduação" },
+            { polo: "Parambu", curso: "Ciências Contábeis - Bacharelado", oferta: "2025.1", vagas: 30, nivel: "Graduação" },
+            { polo: "Parambu", curso: "História - Licenciatura", oferta: "2026.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Parambu", curso: "Matemática - Licenciatura", oferta: "2025.2", vagas: 36, nivel: "Graduação" },
+            { polo: "Pedra Branca", curso: "Ciências Contábeis - Bacharelado", oferta: "2025.1", vagas: 30, nivel: "Graduação" },
+            { polo: "Pedra Branca", curso: "Pedagogia - Licenciatura Plena", oferta: "2025.2", vagas: 40, nivel: "Graduação" },
+            { polo: "Piquet Carneiro", curso: "Geografia - Licenciatura", oferta: "2026.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Piquet Carneiro", curso: "Pedagogia - Licenciatura Plena", oferta: "2026.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Quiterianópolis", curso: "Geografia - Licenciatura", oferta: "2026.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Quiterianópolis", curso: "História - Licenciatura", oferta: "2026.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Quixadá", curso: "Artes Visuais - Licenciatura", oferta: "2025.1", vagas: 30, nivel: "Graduação" },
+            { polo: "Quixadá", curso: "Educação Física - Licenciatura", oferta: "2025.2", vagas: 40, nivel: "Graduação" },
+            { polo: "Quixeramobim", curso: "Ciências Biológicas - Licenciatura", oferta: "2025.2", vagas: 40, nivel: "Graduação" },
+            { polo: "Quixeramobim", curso: "Computação - Licenciatura", oferta: "2025.2", vagas: 40, nivel: "Graduação" },
+            { polo: "Quixeramobim", curso: "Educação Física - Licenciatura", oferta: "2025.2", vagas: 40, nivel: "Graduação" },
+            { polo: "Quixeramobim", curso: "Geografia - Licenciatura", oferta: "2026.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Quixeramobim", curso: "História - Licenciatura", oferta: "2026.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Quixeramobim", curso: "Pedagogia - Licenciatura Plena", oferta: "2026.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Russas", curso: "Ciências Biológicas - Licenciatura", oferta: "2025.2", vagas: 40, nivel: "Graduação" },
+            { polo: "Russas", curso: "Pedagogia - Licenciatura Plena", oferta: "2026.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Santa Quitéria", curso: "Educação Física - Licenciatura", oferta: "2025.2", vagas: 40, nivel: "Graduação" },
+            { polo: "Santa Quitéria", curso: "Física - Licenciatura", oferta: "2025.1", vagas: 30, nivel: "Graduação" },
+            { polo: "Santa Quitéria", curso: "Química - Licenciatura", oferta: "2025.1", vagas: 30, nivel: "Graduação" },
+            { polo: "São Gonçalo do Amarante", curso: "Educação Física - Licenciatura", oferta: "2025.2", vagas: 40, nivel: "Graduação" },
+            { polo: "São Gonçalo do Amarante", curso: "Letras/Português - Licenciatura", oferta: "2025.2", vagas: 40, nivel: "Graduação" },
+            { polo: "Sobral", curso: "Artes Visuais - Licenciatura", oferta: "2025.1", vagas: 30, nivel: "Graduação" },
+            { polo: "Sobral", curso: "Ciências Biológicas - Licenciatura", oferta: "2025.2", vagas: 40, nivel: "Graduação" },
+            { polo: "Sobral", curso: "Química - Licenciatura", oferta: "2025.1", vagas: 30, nivel: "Graduação" },
+            { polo: "Tabuleiro do Norte", curso: "Administração Pública - Bacharelado", oferta: "2025.1", vagas: 30, nivel: "Graduação" },
+            { polo: "Tabuleiro do Norte", curso: "Pedagogia - Licenciatura Plena", oferta: "2026.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Tauá", curso: "História - Licenciatura", oferta: "2026.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Tauá", curso: "Letras/Português - Licenciatura", oferta: "2025.2", vagas: 40, nivel: "Graduação" },
+            { polo: "Tianguá", curso: "Letras/Português - Licenciatura", oferta: "2025.2", vagas: 40, nivel: "Graduação" },
+            { polo: "Tianguá", curso: "Matemática - Licenciatura", oferta: "2025.2", vagas: 36, nivel: "Graduação" },
+            { polo: "Tianguá", curso: "Pedagogia - Licenciatura Plena", oferta: "2026.1", vagas: 40, nivel: "Graduação" },
+            { polo: "Ubajara", curso: "Educação Física - Licenciatura", oferta: "2025.2", vagas: 40, nivel: "Graduação" }
+        ];
+
+        const especData = [
+            { curso: "Alfabetização e Multiletramentos", polo: "Aquiraz", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Alfabetização e Multiletramentos", polo: "Baturité", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Alfabetização e Multiletramentos", polo: "Beberibe", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Alfabetização e Multiletramentos", polo: "Pacoti", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Alfabetização e Multiletramentos", polo: "Parambu", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Auditoria e Controle Interno", polo: "Aracati", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Auditoria e Controle Interno", polo: "Crateús", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Auditoria e Controle Interno", polo: "Jaguaribe", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Auditoria e Controle Interno", polo: "Mombaça", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Auditoria e Controle Interno", polo: "Trairi", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Ciência é 10! - Projeto Nacional", polo: "Caucaia - Itambé", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Ciência é 10! - Projeto Nacional", polo: "Fortaleza", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Ciência é 10! - Projeto Nacional", polo: "Parambu", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Ciência é 10! - Projeto Nacional", polo: "Pedra Branca", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Ciência é 10! - Projeto Nacional", polo: "Piquet Carneiro", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Contabilidade Pública", polo: "Juazeiro do Norte", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Contabilidade Pública", polo: "Maranguape", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Contabilidade Pública", polo: "Orós", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Contabilidade Pública", polo: "Pacoti", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Contabilidade Pública", polo: "Piquet Carneiro", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Controladoria Pública", polo: "Horizonte", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Controladoria Pública", polo: "Maracanaú", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Controladoria Pública", polo: "Meruoca", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Controladoria Pública", polo: "Parambu", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Controladoria Pública", polo: "Pedra Branca", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Cultura Oceânica e Sustentabilidade", polo: "Amontada", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Cultura Oceânica e Sustentabilidade", polo: "Aquiraz", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Cultura Oceânica e Sustentabilidade", polo: "Beberibe", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Cultura Oceânica e Sustentabilidade", polo: "Camocim", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Cultura Oceânica e Sustentabilidade", polo: "Caucaia - Novo Pabussú", vagas: 35, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Cultura Oceânica e Sustentabilidade", polo: "Fortaleza", vagas: 35, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Cultura Oceânica e Sustentabilidade", polo: "Itapipoca", vagas: 35, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Cultura Oceânica e Sustentabilidade", polo: "Itarema", vagas: 35, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Cultura Oceânica e Sustentabilidade", polo: "São Gonçalo do Amarante", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Educação e diversidades", polo: "Amontada", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Educação e diversidades", polo: "Canindé", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Educação e diversidades", polo: "Caucaia - Novo Pabussú", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Educação e diversidades", polo: "Maracanaú", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Educação e diversidades", polo: "Russas", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Educação Física e Esporte para pessoas com deficiência", polo: "Canindé", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Educação Física e Esporte para pessoas com deficiência", polo: "Fortaleza", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Educação Física e Esporte para pessoas com deficiência", polo: "Iguatu", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Educação Física e Esporte para pessoas com deficiência", polo: "Maranguape", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Educação Física e Esporte para pessoas com deficiência", polo: "Russas", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Ensino de Matemática", polo: "Boa Viagem", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Ensino de Matemática", polo: "Campos Sales", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Ensino de Matemática", polo: "Limoeiro do Norte", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Ensino de Matemática", polo: "Mauriti", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Ensino de Matemática", polo: "Orós", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Gestão em Saúde", polo: "Caucaia - Novo Pabussú", vagas: 36, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Gestão em Saúde", polo: "Itapipoca", vagas: 36, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Gestão em Saúde", polo: "Lavras da Mangabeira", vagas: 36, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Gestão em Saúde", polo: "Quixeramobim", vagas: 36, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Gestão em Saúde", polo: "Russas", vagas: 36, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Gestão Escolar - PNAP", polo: "Caucaia - Araturi", vagas: 35, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Gestão Escolar - PNAP", polo: "Crateús", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Gestão Escolar - PNAP", polo: "Itapipoca", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Gestão Escolar - PNAP", polo: "Maranguape", vagas: 35, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Gestão Escolar - PNAP", polo: "Pacoti", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Gestão Escolar - PNAP", polo: "Pedra Branca", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Gestão Escolar - PNAP", polo: "Tabuleiro do Norte", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Gestão Pública - PNAP", polo: "Itapipoca", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Gestão Pública - PNAP", polo: "Mombaça", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Gestão Pública - PNAP", polo: "Quixadá", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Gestão Pública - PNAP", polo: "Russas", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Gestão Pública - PNAP", polo: "Tabuleiro do Norte", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Gestão Pública Municipal", polo: "Boa Viagem", vagas: 36, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Gestão Pública Municipal", polo: "Fortaleza", vagas: 36, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Gestão Pública Municipal", polo: "Granja", vagas: 36, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Gestão Pública Municipal", polo: "Juazeiro do Norte", vagas: 36, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Gestão Pública Municipal", polo: "São Gonçalo do Amarante", vagas: 36, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Governança Global, Desenv. Sustentável e Comunidades Tradicionais", polo: "Amontada", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Governança Global, Desenv. Sustentável e Comunidades Tradicionais", polo: "Aquiraz", vagas: 35, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Governança Global, Desenv. Sustentável e Comunidades Tradicionais", polo: "Aracati", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Governança Global, Desenv. Sustentável e Comunidades Tradicionais", polo: "Beberibe", vagas: 35, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Governança Global, Desenv. Sustentável e Comunidades Tradicionais", polo: "Camocim", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Governança Global, Desenv. Sustentável e Comunidades Tradicionais", polo: "Caucaia - Novo Pabussú", vagas: 35, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Governança Global, Desenv. Sustentável e Comunidades Tradicionais", polo: "Fortaleza", vagas: 35, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Governança Global, Desenv. Sustentável e Comunidades Tradicionais", polo: "Itapipoca", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Governança Global, Desenv. Sustentável e Comunidades Tradicionais", polo: "Itarema", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Letras/Literatura", polo: "Cascavel", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Letras/Literatura", polo: "Iguatu", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Letras/Literatura", polo: "Nova Russas", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Letras/Literatura", polo: "Pires Ferreira", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Letras/Literatura", polo: "Tianguá", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Tradução Audiovisual Acessível / Legendagem", polo: "Aracoiaba", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Tradução Audiovisual Acessível / Legendagem", polo: "Beberibe", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Tradução Audiovisual Acessível / Legendagem", polo: "Canindé", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Tradução Audiovisual Acessível / Legendagem", polo: "Iguatu", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Tradução Audiovisual Acessível / Legendagem", polo: "Jaguaribe", vagas: 34, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Turismo com habilitação em base comunitária", polo: "Assaré", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Turismo com habilitação em base comunitária", polo: "Limoeiro do Norte", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Turismo com habilitação em base comunitária", polo: "Meruoca", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Turismo com habilitação em base comunitária", polo: "Pacoti", vagas: 30, oferta: "2025.2", nivel: "Especialização" },
+            { curso: "Turismo com habilitação em base comunitária", polo: "Tianguá", vagas: 30, oferta: "2025.2", nivel: "Especialização" }
+        ];
+
+        const rawData = [...gradData, ...especData];
+
+        // --- ESTADO DA APLICAÇÃO ---
+        let state = {
+            nivel: "Todos",
+            curso: "Todos",
+            semestre: "Todos"
+        };
+
+        // Instâncias dos gráficos (para poder destruir e recriar)
+        let chartVagasInstance = null;
+        let chartTopCursosInstance = null;
+
+        // --- FUNÇÕES DE LÓGICA ---
+
+        function init() {
+            renderLevelButtons();
+            renderCourseOptions();
+            updateUI();
+            
+            // Event Listeners
+            document.getElementById('course-select').addEventListener('change', (e) => {
+                state.curso = e.target.value;
+                state.semestre = "Todos"; // Resetar semestre ao mudar curso
+                updateUI();
+            });
+        }
+
+        function setNivel(nivel) {
+            state.nivel = nivel;
+            state.curso = "Todos"; // Resetar curso ao mudar nível
+            state.semestre = "Todos";
+            renderLevelButtons(); // Atualiza visual dos botões
+            renderCourseOptions(); // Atualiza lista de cursos
+            updateUI();
+        }
+
+        function setSemester(semestre) {
+            state.semestre = semestre;
+            updateUI();
+        }
+
+        function getFilteredData() {
+            return rawData.filter(item => {
+                const matchesNivel = state.nivel === "Todos" || item.nivel === state.nivel;
+                const matchesCurso = state.curso === "Todos" || item.curso === state.curso;
+                const matchesSemester = state.semestre === "Todos" || item.oferta === state.semestre;
+                return matchesNivel && matchesCurso && matchesSemester;
+            });
+        }
+
+        // --- RENDERIZAÇÃO DOM ---
+
+        function renderLevelButtons() {
+            const container = document.getElementById('level-buttons-container');
+            const levels = ["Todos", "Graduação", "Especialização"];
+            
+            container.innerHTML = levels.map(nivel => {
+                const isActive = state.nivel === nivel;
+                const activeClasses = "bg-emerald-500 text-white shadow-lg shadow-emerald-900/20 ring-2 ring-emerald-400 ring-offset-2 ring-offset-emerald-900";
+                const inactiveClasses = "bg-white/10 text-emerald-100 hover:bg-white/20";
+                
+                return `<button onclick="setNivel('${nivel}')" 
+                        class="px-4 py-2 rounded-lg text-sm font-medium transition-all ${isActive ? activeClasses : inactiveClasses}">
+                        ${nivel}
+                    </button>`;
+            }).join('');
+        }
+
+        function renderCourseOptions() {
+            const select = document.getElementById('course-select');
+            let filteredSource = rawData;
+            
+            if (state.nivel !== "Todos") {
+                filteredSource = rawData.filter(d => d.nivel === state.nivel);
+            }
+            
+            const uniqueCourses = ["Todos", ...new Set(filteredSource.map(d => d.curso).sort())];
+            
+            select.innerHTML = uniqueCourses.map(c => 
+                `<option value="${c}" ${state.curso === c ? 'selected' : ''}>${c}</option>`
+            ).join('');
+
+            // Atualizar ícone e label
+            const label = document.getElementById('course-label');
+            label.textContent = `2. Selecione o Curso ${state.nivel !== "Todos" ? `de ${state.nivel}` : ""}`;
+            
+            const iconContainer = document.getElementById('course-icon-container');
+            const iconName = state.nivel === "Especialização" ? "briefcase" : "school";
+            iconContainer.innerHTML = `<i data-lucide="${iconName}" class="h-5 w-5 text-emerald-700"></i>`;
+            lucide.createIcons();
+        }
+
+        function updateUI() {
+            const data = getFilteredData();
+
+            // 1. Atualizar KPIs
+            const totalVagas = data.reduce((acc, curr) => acc + curr.vagas, 0);
+            const totalPolos = new Set(data.map(d => d.polo)).size;
+            const totalTurmas = data.length;
+
+            animateValue("kpi-vagas", parseInt(document.getElementById("kpi-vagas").innerText), totalVagas, 500);
+            animateValue("kpi-polos", parseInt(document.getElementById("kpi-polos").innerText), totalPolos, 500);
+            animateValue("kpi-turmas", parseInt(document.getElementById("kpi-turmas").innerText), totalTurmas, 500);
+
+            document.getElementById("kpi-vagas-subtitle").textContent = state.curso === "Todos" ? "No filtro atual" : `Para ${state.curso}`;
+
+            // 2. Renderizar Área de Conteúdo
+            const dynamicContent = document.getElementById('dynamic-content');
+            
+            if (state.curso !== "Todos") {
+                renderSpecificView(dynamicContent);
+            } else {
+                renderGlobalView(dynamicContent);
+            }
+            
+            // Recarregar ícones inseridos dinamicamente
+            lucide.createIcons();
+        }
+
+        // --- VISÃO DE CURSO ESPECÍFICO ---
+        function renderSpecificView(container) {
+            // Dropdown de semestre para o filtro secundário
+            const allSemesters = ["Todos", ...new Set(rawData.map(d => d.oferta).sort())];
+            const semesterOptions = allSemesters.map(s => 
+                `<option value="${s}" ${state.semestre === s ? 'selected' : ''}>${s}</option>`
+            ).join('');
+
+            let html = `
+                <div class="space-y-8">
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex flex-col md:flex-row justify-between items-center gap-4">
+                            <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                                <i data-lucide="calendar" class="h-5 w-5 text-emerald-600"></i>
+                                Cronograma de Oferta por Semestre
+                            </h3>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm text-slate-500">Filtrar semestre:</span>
+                                <select onchange="setSemester(this.value)" class="bg-white border border-slate-300 text-sm rounded-md px-3 py-1.5 focus:ring-2 focus:ring-emerald-500 outline-none">
+                                    ${semesterOptions}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+            `;
+
+            const semestres = ["2025.1", "2025.2", "2026.1"];
+            
+            semestres.forEach(semestre => {
+                if (state.semestre !== "Todos" && state.semestre !== semestre) return;
+
+                // Filtrar apenas por curso e nível para construir as colunas, ignorando o filtro de semestre do state para agrupar corretamente
+                // mas se o usuário filtrou um semestre, só mostramos aquele card.
+                
+                const turmas = rawData.filter(item => {
+                    const matchesNivel = state.nivel === "Todos" || item.nivel === state.nivel;
+                    const matchesCurso = item.curso === state.curso;
+                    const matchesTime = item.oferta === semestre;
+                    return matchesNivel && matchesCurso && matchesTime;
+                });
+
+                const hasTurmas = turmas.length > 0;
+                
+                // Estilos condicionais baseados no semestre
+                let headerColorClass = "bg-purple-50 border-purple-100 text-purple-800";
+                if(semestre === "2025.1") headerColorClass = "bg-green-50 border-green-100 text-green-800";
+                if(semestre === "2025.2") headerColorClass = "bg-blue-50 border-blue-100 text-blue-800";
+
+                html += `
+                    <div class="rounded-xl border ${hasTurmas ? "border-slate-200 bg-white" : "border-slate-100 bg-slate-50/50 border-dashed"}">
+                        <div class="px-4 py-3 border-b flex justify-between items-center ${headerColorClass}">
+                            <h4 class="font-bold text-lg">${semestre}</h4>
+                            <span class="bg-white px-2 py-0.5 rounded text-xs font-semibold shadow-sm text-slate-600">
+                                ${turmas.length} polos
+                            </span>
+                        </div>
+                        <div class="p-4">
+                            ${hasTurmas ? `
+                                <ul class="space-y-2">
+                                    ${turmas.map(t => `
+                                        <li class="flex justify-between items-center p-2 hover:bg-slate-50 rounded transition-colors group">
+                                            <div class="flex items-center gap-2">
+                                                <i data-lucide="map-pin" class="h-4 w-4 text-slate-400 group-hover:text-emerald-500"></i>
+                                                <span class="font-medium text-slate-700">${t.polo}</span>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                ${t.nivel === "Especialização" ? 
+                                                    '<span class="text-[10px] uppercase font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100">Espec.</span>' 
+                                                    : ''}
+                                                <span class="text-sm font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">${t.vagas} vagas</span>
+                                            </div>
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            ` : '<div class="text-center py-8 text-slate-400 text-sm italic">Nenhuma oferta prevista.</div>'}
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        // --- VISÃO GLOBAL ---
+        function renderGlobalView(container) {
+            const data = getFilteredData();
+            
+            container.innerHTML = `
+                <div class="space-y-8">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Chart 1 -->
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                            <h3 class="text-lg font-bold text-slate-800 mb-4">Total de Vagas por Semestre</h3>
+                            <div class="chart-container">
+                                <canvas id="chart-semestres"></canvas>
+                            </div>
+                        </div>
+                        <!-- Chart 2 -->
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                            <h3 class="text-lg font-bold text-slate-800 mb-4">Top 10 Cursos com Mais Vagas</h3>
+                            <div class="chart-container">
+                                <canvas id="chart-top-cursos"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                         <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                            <h3 class="text-lg font-bold text-slate-800">Visão Geral de Ofertas</h3>
+                            <span class="text-xs font-medium bg-slate-100 text-slate-500 px-2 py-1 rounded">
+                                Exibindo ${data.length} registros
+                            </span>
+                        </div>
+                        <div class="overflow-x-auto max-h-96">
+                            <table class="w-full text-left text-sm text-slate-600">
+                                <thead class="bg-slate-50 text-slate-700 font-semibold uppercase tracking-wider text-xs border-b border-slate-200 sticky top-0 z-10">
+                                    <tr>
+                                        <th class="px-6 py-4">Curso</th>
+                                        <th class="px-6 py-4 text-center">Início</th>
+                                        <th class="px-6 py-4">Polo</th>
+                                        <th class="px-6 py-4">Nível</th>
+                                        <th class="px-6 py-4 text-right">Vagas</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    ${renderTableRows(data)}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Init Charts após o HTML existir
+            initCharts(data);
+        }
+
+        function renderTableRows(data) {
+            // Sort
+            const sorted = [...data].sort((a, b) => {
+                const cursoDiff = a.curso.localeCompare(b.curso);
+                if (cursoDiff !== 0) return cursoDiff;
+                const ofertaDiff = a.oferta.localeCompare(b.oferta);
+                if (ofertaDiff !== 0) return ofertaDiff;
+                return a.polo.localeCompare(b.polo);
+            });
+
+            return sorted.map(item => `
+                <tr class="hover:bg-slate-50">
+                    <td class="px-6 py-4 font-medium text-slate-800">${item.curso}</td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                            ${item.oferta === "2025.1" ? "bg-green-100 text-green-800" : 
+                              item.oferta === "2025.2" ? "bg-blue-100 text-blue-800" : 
+                              "bg-purple-100 text-purple-800"}">
+                            ${item.oferta}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4">${item.polo}</td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border
+                            ${item.nivel === "Graduação" ? "bg-indigo-50 text-indigo-700 border-indigo-100" : "bg-amber-50 text-amber-700 border-amber-100"}">
+                            ${item.nivel}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-right">${item.vagas}</td>
+                </tr>
+            `).join('');
+        }
+
+        function initCharts(data) {
+            // Chart 1: Vagas por Semestre
+            const semesterData = {
+                "2025.1": 0, "2025.2": 0, "2026.1": 0
+            };
+            // Usamos rawData para manter contexto comparativo se "Todos" estiver selecionado, 
+            // mas aqui usaremos 'data' filtrado para respeitar a visualização atual.
+            // Para ficar idêntico ao React, o gráfico de barras mostra o total FILTRADO.
+            data.forEach(d => {
+                if(semesterData[d.oferta] !== undefined) semesterData[d.oferta] += d.vagas;
+            });
+
+            const ctx1 = document.getElementById('chart-semestres').getContext('2d');
+            if(chartVagasInstance) chartVagasInstance.destroy();
+            
+            chartVagasInstance = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(semesterData),
+                    datasets: [{
+                        label: 'Vagas Totais',
+                        data: Object.values(semesterData),
+                        backgroundColor: '#059669', // emerald-600
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { display: false } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // Chart 2: Top Cursos
+            // Agrupar por curso
+            const counts = {};
+            data.forEach(item => {
+                counts[item.curso] = (counts[item.curso] || 0) + item.vagas;
+            });
+            const sortedCourses = Object.keys(counts)
+                .map(key => ({ name: key, value: counts[key] }))
+                .sort((a, b) => b.value - a.value)
+                .slice(0, 10);
+
+            const ctx2 = document.getElementById('chart-top-cursos').getContext('2d');
+            if(chartTopCursosInstance) chartTopCursosInstance.destroy();
+
+            chartTopCursosInstance = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: sortedCourses.map(c => c.name.length > 25 ? c.name.substring(0, 25) + '...' : c.name),
+                    datasets: [{
+                        label: 'Vagas',
+                        data: sortedCourses.map(c => c.value),
+                        backgroundColor: '#3b82f6', // blue-500
+                        borderRadius: 4,
+                        indexAxis: 'y', // Horizontal
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // Função utilitária de animação
+        function animateValue(id, start, end, duration) {
+            if (start === end) return;
+            const obj = document.getElementById(id);
+            const range = end - start;
+            let current = start;
+            const increment = end > start ? 1 : -1;
+            const stepTime = Math.abs(Math.floor(duration / range));
+            const timer = setInterval(function() {
+                current += increment;
+                obj.innerHTML = current;
+                if (current == end) {
+                    clearInterval(timer);
+                }
+            }, Math.max(stepTime, 10)); // Mínimo de 10ms
+            
+            // Fallback imediato para números muito grandes
+            if (range > 100) {
+                clearInterval(timer);
+                obj.innerHTML = end;
+            }
+        }
+
+        // --- INICIALIZAÇÃO ---
+        window.addEventListener('DOMContentLoaded', init);
+
+    </script>
+</body>
+</html>
